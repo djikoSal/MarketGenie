@@ -27,15 +27,20 @@ def build_data(dataframes):
     for df in dataframes: #we have to know what dataframe starts latest
         tmp = dt.datetime.strptime(str(df.head().index[0]),'%Y-%m-%d %H:%M:%S');
         if tmp > firstDay:
-            firstDay = tmp; 
+            firstDay = tmp;
     #here we will use python dicts
     for df in dataframes:
         for index, row in df.iterrows():
             print(index)
             print(row[0],row[1])
             break
-            
+
 # hur kommer data se ut efter  de här 2? ^^
+# svar: jag tänkte använde så kallade "python dictionary" där man har key
+# och value precis som en symboltabell. I detta fall är key = dagen
+# och value = data för dagen. Datat kan vara en lista med dagens data från
+# alla aktier.
+# När vi har en dictionary så kan vi enkelt slå upp dagar
 
 #Usage: give me one example training data and I will label it
 #output: Label , Buy/Sell.
