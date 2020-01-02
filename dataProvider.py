@@ -34,6 +34,8 @@ def build_data(dataframes):
             print(index)
             print(row[0],row[1])
             break
+            
+# hur kommer data se ut efter  de här 2? ^^
 
 #Usage: give me one example training data and I will label it
 #output: Label , Buy/Sell.
