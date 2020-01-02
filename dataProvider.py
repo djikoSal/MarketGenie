@@ -9,7 +9,7 @@ style.use('ggplot')
 
 #Usage: start time, end time , how long period, stock 1 , stock 2 , stock 3 and so on
 #output is [[period 1], [period 2], ...]
-def get_data(start_time,end_time,period_length,*stock_names):
+def get_data(start_time,end_time,*stock_names):
     #print(start_time , end_time, period_length)
     dateStart = dt.datetime(int(start_time[0:4]),int(start_time[4:6]),int(start_time[6:8]))
     dateEnd = dt.datetime(int(end_time[0:4]),int(end_time[4:6]),int(end_time[6:8]))
@@ -20,7 +20,8 @@ def get_data(start_time,end_time,period_length,*stock_names):
         tmp = tmp +1
         df = web.DataReader(stock_name,'yahoo',dateStart,dateEnd); #get dataframe
         dataframes.append(df)
-    build_data(dataframes)
+    return build_data(dataframes)
+
 
 def build_data(dataframes):
     print("Daily data: ","1)",dataframes[0].columns.values[0]," 2)",dataframes[0].columns.values[1]," 3)",dataframes[0].columns.values[2],sep='')
@@ -63,14 +64,15 @@ def build_data(dataframes):
     #NO IT IS DONE! WE CAN RETRIEVE ANY DAY DATA wow !
     print("\nExample data from 2018-08-09:\n",dictionary['2018-08-01'])
     print()
-    
+
     #this below is just a control that there are no gaps in recorded days
-    for key in dictionary.keys():
-        if len(dictionary[key]) != 4:
-            print("wrong1"," ",key)
-        for stock in dictionary[key]:
-            if len(stock) != 3:
-                print("wrong2"," ",key)
+    #for key in dictionary.keys():
+    #    if len(dictionary[key]) != 4:
+    #        print("wrong1"," ",key)
+    #    for stock in dictionary[key]:
+    #        if len(stock) != 3:
+    #            print("wrong2"," ",key)
+    return dictionary
 # hur kommer data se ut efter  de här 2? ^^
 # svar: jag tänkte använde så kallade "python dictionary" där man har key
 # och value precis som en symboltabell. I detta fall är key = dagen
@@ -80,8 +82,72 @@ def build_data(dataframes):
 
 #Usage: give me one example training data and I will label it
 #output: Label , Buy/Sell.
+def flatten(list):#helper function to flatten nested list to simple
+    new_list = []
+    for vals in list:
+        for val in vals:
+            new_list.append(val)
+    return new_list
+def get_features(dictionary,period_length):
+    first_day = dt.datetime.strptime(list(dictionary)[0],'%Y-%m-%d')
+    #NOTE: start day is first_day + period_length
+    stock_count = len(dictionary[first_day.strftime("%Y-%m-%d")])
+    features = []
+    labels = []
+    for day in dictionary.keys():
+        date = dt.datetime.strptime(day,'%Y-%m-%d')
+        period = flatten(dictionary[day])
+        for i in range(1,period_length):
+            tmp_date = (date+dt.timedelta(days=i)).strftime("%Y-%m-%d") #increment one day
+            if not tmp_date in dictionary:
+                return features, labels
+            period = period + flatten(dictionary[tmp_date])
+        end_date = (date+dt.timedelta(days=period_length-1)).strftime("%Y-%m-%d")
+        prediction_date = (date+dt.timedelta(days=period_length)).strftime("%Y-%m-%d")
+        if not prediction_date in dictionary:
+            return features, labels
+        period_label = ""
+        for i in range(0,stock_count):
+            label = classify(end_date,prediction_date,i,dictionary)
+            period_label = period_label + label
+        labels.append(period_label)
+        features.append(period)
+        print(labels)
+
+def classify(today,tomorrow,stock_index,dictionary):
+    #SB -> StrongBuy
+    #WB -> WeakBuy
+    #SS -> StrongSell
+    #WS -> WeakSell
+
+    today_high = dictionary[today][stock_index][0]
+    today_low = dictionary[today][stock_index][1]
+    today_Open = dictionary[today][stock_index][2]
+    tomorrow_high = dictionary[tomorrow][stock_index][0]
+    tomorrow_low = dictionary[tomorrow][stock_index][1]
+    tomorrow_Open = dictionary[tomorrow][stock_index][2]
+
+    strong_bound_percentage = 0.01 #what is considered strong?
+
+    if (tomorrow_low / today_high) - 1 > strong_bound_percentage:
+        return "SB"
+    if (tomorrow_low * -1 / today_high) - 1 > strong_bound_percentage:
+        return "SS"
+    if (tomorrow_low / today_high) - 1 > 0:
+        return "WB"
+    if (tomorrow_low / today_high) - 1 < 0:
+        return "WS"
+
+    return "WB" #We are optimistic
 def simple_classifier():
     pass
+def main(start_time,end_time,*stock_names):
+    period_length = 15 #days
+    our_dictionary = get_data(start_time,end_time,*stock_names)
+    our_features, our_labels = get_features(our_dictionary,period_length)
 
+
+
+
+main('20170801','20181231','OOIL','COPX')
 #this is an example of how to retrieve some data
-get_data('20170801','20181231',15,'AAPL','TSLA','OOIL','COPX')
