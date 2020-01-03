@@ -1,4 +1,6 @@
 import datetime as dt
+import sklearn
+from sklearn import tree
 import matplotlib.pyplot as plt
 from matplotlib import style
 import pandas as pd
@@ -61,8 +63,7 @@ def build_data(dataframes):
         lastDay = day #the data can end here thank youuuuu
 
     print("Data was collected from",firstDay.strftime("%Y-%m-%d"),"to",lastDay.strftime("%Y-%m-%d"))
-    #NO IT IS DONE! WE CAN RETRIEVE ANY DAY DATA wow !
-    print("\nExample data from 2018-08-09:\n",dictionary['2018-08-01'])
+    #NOw IT IS DONE! WE CAN RETRIEVE ANY DAY DATA wow !
     print()
 
     #this below is just a control that there are no gaps in recorded days
@@ -112,7 +113,7 @@ def get_features(dictionary,period_length):
             period_label = period_label + label
         labels.append(period_label)
         features.append(period)
-        print(labels)
+
 
 def classify(today,tomorrow,stock_index,dictionary):
     #SB -> StrongBuy
@@ -127,7 +128,7 @@ def classify(today,tomorrow,stock_index,dictionary):
     tomorrow_low = dictionary[tomorrow][stock_index][1]
     tomorrow_Open = dictionary[tomorrow][stock_index][2]
 
-    strong_bound_percentage = 0.01 #what is considered strong?
+    strong_bound_percentage = 0.008 #what is considered strong?
 
     if (tomorrow_low / today_high) - 1 > strong_bound_percentage:
         return "SB"
@@ -141,13 +142,64 @@ def classify(today,tomorrow,stock_index,dictionary):
     return "WB" #We are optimistic
 def simple_classifier():
     pass
-def main(start_time,end_time,*stock_names):
-    period_length = 15 #days
+def main(start_time,end_time,period_length,*stock_names):
     our_dictionary = get_data(start_time,end_time,*stock_names)
     our_features, our_labels = get_features(our_dictionary,period_length)
 
+    print(len(our_features),len(our_labels))
+    formatted_labels = encode_labels(our_labels)
+    predictor = learn(our_features,formatted_labels)
+    #holy shit we have created strong AI now !
+    #lets try to predict something L O L
+    try_start_time = dt.datetime(int(end_time[0:4]),int(end_time[4:6]),int(end_time[6:8]))
+    try_end_time = dt.datetime.today() - dt.timedelta(days=2) #yesterday
+    try_dictionary = get_data(try_start_time.strftime("%Y%m%d"),try_end_time.strftime("%Y%m%d"),*stock_names)
+    try_features, true_labels = get_features(try_dictionary,period_length)
 
+    correct_prediction_count = 0
+    #try_count = 10
+    try_count = len(true_labels)
+    for i in range(0,try_count):
+        predict_val = decode_label(predictor.predict([try_features[i]]))
+        actual_val = true_labels[i]
+        #print("predicted:",predict_val)
+        #print("actual:   ",actual_val)
+        if predict_val == actual_val:
+            correct_prediction_count+=1
+    print("\nPredicted",try_count,"days and",correct_prediction_count," were fully accurate")
+    print(100*correct_prediction_count/try_count,"% accuracy",sep="")
 
+def learn(features,labels):
+    our_tree = tree.DecisionTreeClassifier()
+    return our_tree.fit(features,labels)
+def encode_labels(labels):
+    new_labels = []
+    for l in labels:
+        new_labels.append(encode_label(l))
+    return new_labels
 
-main('20170801','20181231','OOIL','COPX')
+def encode_label(labl):
+    table = {"SS":0,"WS":1,"WB":2,"SB":3}
+    exponent = len(labl) / 2 - 1
+    result = 0
+    for i in range(0,len(labl)//2):
+        result += table[labl[2*i:2+2*i]] * (4**exponent)
+        exponent = exponent - 1
+    return int(result)
+
+def decode_label(number):
+    table = ["SS","WS","WB","SB"];
+    rest = number
+    label = ""
+    max_exponent = 4**10
+    while rest // max_exponent < 1:
+        max_exponent = max_exponent / 4 #too big
+    while rest != 0:
+        key = int(rest // max_exponent)
+        label += table[key]
+        rest = rest - key * max_exponent
+        max_exponent = max_exponent / 4
+    return label
+main('20170803','20181231',20,'OOIL')#,'COPX','TSLA','GOOG')
+#main('20190101','20191231',15,'OOIL','COPX','TSLA','GOOG')
 #this is an example of how to retrieve some data
