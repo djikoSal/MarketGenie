@@ -182,7 +182,7 @@ def classify_old(today,tomorrow,stock_index,dictionary):
     return "WB" #We are optimistic
 def simple_classifier():
     pass
-#
+#main outputs tuple (today_prediction , list of accuracies of models)
 def main(start_time,end_time,period_length,verbose,stock_names):
     if verbose:
         print("Training data with", period_length,"days historical data:")
@@ -201,16 +201,16 @@ def main(start_time,end_time,period_length,verbose,stock_names):
     try_features, true_labels = get_features(try_dictionary,period_length)
 
     result = []
-
-    for p in [p_MLP, p_RandomForest, p_KNeighbor, p_tree]:
+    today_prediction = ""
+    for p in [p_MLP, p_RandomForest, p_KNeighbor, p_tree]: #try all models
         if verbose:
             print(type(p))
         correct_prediction_count = 0
         #try_count = 10
         try_count = len(true_labels)
-        first = dt.datetime.strptime(next(iter(try_dictionary)),'%Y-%m-%d')
-        first = first  + dt.timedelta(days=period_length)
-
+        today_prediction += str(type(p)) + " predicts " + decode_label(p.predict([try_features[try_count-1]])) +"\n"
+        first = dt.datetime.strptime(next(iter(try_dictionary)),'%Y-%m-%d')#find first recorded day
+        first = first  + dt.timedelta(days=period_length) #first recorded feature
         for i in range(0,try_count):
             predict_val = decode_label(p.predict([try_features[i]]))
             actual_val = true_labels[i]
@@ -220,14 +220,15 @@ def main(start_time,end_time,period_length,verbose,stock_names):
                 correct_prediction_count+=1
                 if verbose:
                     pass#print("hit",first.strftime("%Y-%m-%d"), predict_val,actual_val)
-            first = first + dt.timedelta(days=1)
+            first = first + dt.timedelta(days=1) #this is only for keeping track on days
         if verbose:
             print("Predicted",try_count,"days and",correct_prediction_count," were fully accurate")
             print(100*correct_prediction_count/try_count,"% accuracy\n",sep="")
         result.append(100*correct_prediction_count/try_count)
 
-    return result
-#return all the classifier
+    return result, today_prediction
+
+#return all the classifiers as a tuple
 def learn(features,labels):
     return learn_MLP(features,labels),learn_RandomForest(features,labels),learn_KNeighbors(features,labels),learn_tree(features,labels)
 def learn_MLP(features,labels):
@@ -282,10 +283,10 @@ def decode_label(number):
 def test(tmp):
     print("Welcome to MarketGenie v0.1")
     print("1) Run massive test (Automated)")
-    print("2) Run massive test (Manually)")
+    print("2) Run massive test (Manually) [Not yet done]")
     print("3) Get a prediction for tomorrow")
 
-    choice = "1"#input()
+    choice = input()
 
     if choice == "1":
         #1 , 2 , 3, 4 , 5 ,6 , 7, 8 , 9 , 10 ,11 , 12 ,15 , 20 ,30 , 60, 90
@@ -295,7 +296,7 @@ def test(tmp):
         stocks = ['OOIL','COPX','GOLD','AG','UEC']
         #stocks = ['OOIL']
         y_labels = list(combinations(stocks,1)) #all combinations of length = 1
-        y_labels+=(list(combinations(stocks,2)))
+        #y_labels+=(list(combinations(stocks,2)))
         #y_labels+=(list(combinations(stocks,3)))
         #y_labels+=(list(combinations(stocks,4)))
         #y_labels+=(list(combinations(stocks,5)))
@@ -315,7 +316,7 @@ def test(tmp):
             print("Calculating for period length", period_length)
             for comb_stocks in y_labels:
                 local_highest = {'model_id':-1,'res':0}
-                res = main('20150803','20181231',period_length,False,list(comb_stocks))
+                res, s = main('20150803','20181231',period_length,False,list(comb_stocks))
                 print(comb_stocks," ",max(res),"%",)
                 for x in range(0,len(res)):
                     x_values.append(period_length)
@@ -334,14 +335,18 @@ def test(tmp):
                 plt.scatter(comb_stocks,str(period_length),alpha=0.5,s=local_highest['res']*tmp, c=classifier_dict[local_highest['model_id']])
                 #plt.scatter(comb_stocks,str(period_length),s=100*40, edgecolors='black',facecolors='none')
         print(global_highest,perm,period_len,classifier_id)
-        res = main('20150803','20181231',15,False,list(y_labels[0]))
+        #res = main('20150803','20181231',15,False,list(y_labels[0]))
         #plt.scatter(list(x_values),list(y_values),s = s_values*1000)#,c = bubble_colors)
         plt.ylabel('Period length', fontsize=16)
         plt.xlabel('Stocks', fontsize=16)
-        plt.savefig('fig'+str(tmp)+'.png')
-        #plt.show()
+        #plt.savefig('fig'+str(tmp)+'.png')
+        plt.show()
         #print(res[0])
-
+    elif choice == "3":
+        period_len = input("What far back in time do you want to predict upon?[days]\n")
+        stocks = input("Type stock symbols seperated with space\n")
+        res, s = main("20140101",(dt.datetime.today()-dt.timedelta(days=int(period_len)*2)).strftime("%Y%m%d"),int(period_len),False,stocks.split())
+        print(s)
 
 test(15)
 test(12)
