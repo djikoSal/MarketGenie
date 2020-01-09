@@ -279,7 +279,7 @@ def decode_label(number):
 
 #main('20190101','20191231',15,'OOIL','COPX','TSLA','GOOG')
 #this is an example of how to retrieve some data
-def test():
+def test(tmp):
     print("Welcome to MarketGenie v0.1")
     print("1) Run massive test (Automated)")
     print("2) Run massive test (Manually)")
@@ -295,12 +295,12 @@ def test():
         stocks = ['OOIL','COPX','GOLD','AG','UEC']
         #stocks = ['OOIL']
         y_labels = list(combinations(stocks,1)) #all combinations of length = 1
-        #y_labels+=(list(combinations(stocks,2)))
+        y_labels+=(list(combinations(stocks,2)))
         #y_labels+=(list(combinations(stocks,3)))
         #y_labels+=(list(combinations(stocks,4)))
         #y_labels+=(list(combinations(stocks,5)))
         classifier_dict = {0:'red',1:'blue',2:'green',3:'yellow'}
-        x_labels = [4,5,6,7]
+        #x_labels = [4,5,6,7]
         x_values = []
         y_values = []
         s_values = []
@@ -310,6 +310,7 @@ def test():
         period_len = 0
         classifier_id = 0
         print(len(y_labels))
+
         for period_length in x_labels:
             print("Calculating for period length", period_length)
             for comb_stocks in y_labels:
@@ -329,15 +330,25 @@ def test():
                         perm = comb_stocks
                         period_len = period_length
                         classifier_id = x
-                plt.scatter(comb_stocks,str(period_length),alpha=0.5,s=local_highest['res']*40, c=classifier_dict[local_highest['model_id']])
-                plt.scatter(comb_stocks,str(period_length),s=100*40, edgecolors='black',facecolors='none')
+                comb_stocks = ''.join(comb_stocks)
+                plt.scatter(comb_stocks,str(period_length),alpha=0.5,s=local_highest['res']*tmp, c=classifier_dict[local_highest['model_id']])
+                #plt.scatter(comb_stocks,str(period_length),s=100*40, edgecolors='black',facecolors='none')
         print(global_highest,perm,period_len,classifier_id)
         res = main('20150803','20181231',15,False,list(y_labels[0]))
         #plt.scatter(list(x_values),list(y_values),s = s_values*1000)#,c = bubble_colors)
         plt.ylabel('Period length', fontsize=16)
         plt.xlabel('Stocks', fontsize=16)
-        plt.show()
+        plt.savefig('fig'+str(tmp)+'.png')
+        #plt.show()
         #print(res[0])
 
 
-test()
+test(15)
+test(12)
+test(10)
+test(9)
+test(8)
+test(7)
+test(6)
+test(5)
+test(3)
