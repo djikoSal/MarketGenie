@@ -22,7 +22,12 @@ we wanted to do supervised training. So that was the big question answered, but 
 	Is a simple and easy to understand classifier, that builds a decision tree when fitted. 
 	Predicts by learning rules from the data features given.
    MLPClassifier
-	Network of perceptrons, a type of neural network. Very
+	Network of perceptrons, a type of neural network. Very similar to neuron but only binary output from each node, instead of graded.	
+   RandomForestClassifier 
+	Decisiontree but a bit better, there is random involved
+   KNeighborsClassifier
+	Basically find the k - closest data points, the majority of their label is your label
+
 6. This is a small visualisation of the design, 
 	preprocessing: 
 			get_data: getting data with pandas and storing them as dataframes

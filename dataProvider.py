@@ -99,6 +99,7 @@ def flatten(list):#helper function to flatten nested list to simple list
         for val in vals:
             new_list.append(val)
     return new_list
+
 #get_features will take the dictionary and create features and labels
 #output is a tuple: features , labels
 def get_features(dictionary,period_length):
@@ -107,22 +108,22 @@ def get_features(dictionary,period_length):
     stock_count = len(dictionary[first_day.strftime("%Y-%m-%d")])
     features = []
     labels = []
-    for day in dictionary.keys():
+    for day in dictionary.keys(): #for each day
         date = dt.datetime.strptime(day,'%Y-%m-%d')
         period = flatten(dictionary[day])
-        for i in range(1,period_length):
+        for i in range(1,period_length): # sliding window
             tmp_date = (date+dt.timedelta(days=i)).strftime("%Y-%m-%d") #increment one day
             if not tmp_date in dictionary:
                 return features, labels
             period = period + flatten(dictionary[tmp_date])
         end_date = (date+dt.timedelta(days=period_length-1)).strftime("%Y-%m-%d")
         prediction_date = (date+dt.timedelta(days=period_length)).strftime("%Y-%m-%d")
-        if not prediction_date in dictionary:
+        if not prediction_date in dictionary: #corner case again, index out of bounds
             return features, labels
         period_label = ""
-        for i in range(0,stock_count):
-            label = classify(end_date,prediction_date,i,dictionary)
-            period_label = period_label + label
+        for i in range(0,stock_count): #for this period go through all stocks
+            label = labeler(end_date,prediction_date,i,dictionary)
+            period_label = period_label + label #build combinational label
         labels.append(period_label)
         features.append(period)
 
@@ -130,7 +131,7 @@ def get_features(dictionary,period_length):
 #give me the whole dictionary and which stock (index)
 #I will give you the prediction of tomorrow
 #It should be called "labeler"
-def classify(today,tomorrow,stock_index,dictionary):
+def labeler(today,tomorrow,stock_index,dictionary):
     #SB -> StrongBuy
     #WB -> WeakBuy
     #SS -> StrongSell
@@ -300,6 +301,8 @@ def test(tmp):
         #y_labels+=(list(combinations(stocks,3)))
         #y_labels+=(list(combinations(stocks,4)))
         #y_labels+=(list(combinations(stocks,5)))
+        #four classifiers -> four color
+        # 0 MLP   1 RandomForest   2 KNeighbor   3 Decisiontree
         classifier_dict = {0:'red',1:'blue',2:'green',3:'yellow'}
         #x_labels = [4,5,6,7]
         x_values = []
@@ -343,9 +346,10 @@ def test(tmp):
         plt.show()
         #print(res[0])
     elif choice == "3":
-        period_len = input("What far back in time do you want to predict upon?[days]\n")
+        period_len = input("How far back in time do you want to predict upon?[days]\n")
         stocks = input("Type stock symbols seperated with space\n")
         res, s = main("20140101",(dt.datetime.today()-dt.timedelta(days=int(period_len)*2)).strftime("%Y%m%d"),int(period_len),False,stocks.split())
+        print()
         print(s)
 
 test(15)
