@@ -1,0 +1,36 @@
+1. Me and my collegue have been working on stock market prediction, in detail we've tried to predict the stock market for commodities. 
+The general idea was that we wanted to see if there was a relationship between two or more commodities and what it would mean to 
+predict them together
+
+2. As a part of the initial study, we had to research a bit about stocks to get us ready for the task. 
+The thing we learned/decided was that we would use daily data.
+There are many reasons why, but two of them is; Limitation is needed and because there is a Yahoo api. 
+We've focused on commodities because the main thought was that if there are related stocks, surely it was resources
+Each daily data entry has "stock quotes" -> basically daily information about the stock prices, but what should
+we include in our training data? This was one of the questions we asked ourself in the initial study. 
+
+3. But we did manage to answer the big question. How it will function in a nutshell. We also decided that 
+we wanted to do supervised training. So that was the big question answered, but many other questions remained
+
+4.  1) No idea, nothing on internet
+    2) No idea, nothing on internet
+    3) Yes, dataframes with pandas through Yahoo
+    4) Problem: All stocks did not have same set of recorded days, solution: copy last recorded day
+    5) We'll have to experiment with that
+
+5. Decision tree classifier
+	Is a simple and easy to understand classifier, that builds a decision tree when fitted. 
+	Predicts by learning rules from the data features given.
+   MLPClassifier
+	Network of perceptrons, a type of neural network. Very
+6. This is a small visualisation of the design, 
+	preprocessing: 
+			get_data: getting data with pandas and storing them as dataframes
+			build_data: using dataframes to build consistent dictionary
+						(key:datum  value:datapoint)
+	processing:
+			get_features: use a sliding window of length as period and each time we move the sliding we label
+					(output: tuple(features, labels))
+	learn: 		return a prediction model so that we can predict new
+
+7. 
