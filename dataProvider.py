@@ -227,7 +227,8 @@ def main(start_time,end_time,period_length,verbose,stock_names):
             print(100*correct_prediction_count/try_count,"% accuracy\n",sep="")
         result.append(100*correct_prediction_count/try_count)
 
-    return result, today_prediction
+    return result, today_prediction #result is a list of accuracies from classifiers
+    #today_prediction is just a string with predicted tomorrow
 
 #return all the classifiers as a tuple
 def learn(features,labels):
@@ -284,8 +285,9 @@ def decode_label(number):
 def test(tmp):
     print("Welcome to MarketGenie v0.1")
     print("1) Run massive test (Automated)")
-    print("2) Run massive test (Manually) [Not yet done]")
-    print("3) Get a prediction for tomorrow")
+    print("2) Get a prediction for tomorrow")
+    print("3) Run large test (Manually) and get prediction tomorrow")
+
 
     choice = input()
 
@@ -345,19 +347,24 @@ def test(tmp):
         #plt.savefig('fig'+str(tmp)+'.png')
         plt.show()
         #print(res[0])
-    elif choice == "3":
+    elif choice == "2":
         period_len = input("How far back in time do you want to predict upon?[days]\n")
         stocks = input("Type stock symbols seperated with space\n")
         res, s = main("20140101",(dt.datetime.today()-dt.timedelta(days=int(period_len)*2)).strftime("%Y%m%d"),int(period_len),False,stocks.split())
         print()
         print(s)
+    elif choice == "3":
+        print("Note that test data will be data from where training data ended")
+        dates = input("Training data start/end date: [Ex: \"20150803 20181231\"]\n")
+        stocks = input("Type stock symbols seperated with space\n")
+        period_len = input("How far back in time do you want to predict upon?[days]\n")
+        print("Debug:")
+        res, s  = main(dates.split()[0],dates.split()[1],int(period_len),True,stocks.split())
+        print("Tomorrow prediction:")
+        print(s)
 
-test(15)
-test(12)
-test(10)
-test(9)
-test(8)
-test(7)
-test(6)
+#test(15)
+#
+#result,str = main('20150803','20181231',15,True,['GOOG'])
+#print(str)
 test(5)
-test(3)
